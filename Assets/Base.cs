@@ -11,10 +11,21 @@ public class Base : MonoBehaviour
 
     public GameObject fighterPrefab;
 
+    IEnumerator AccumulateTiberium() {
+        while(true) {
+            yield return new WaitForSeconds(1);
+
+            if(tiberium != 10) {
+                tiberium++;
+            }
+        }
+    }
 
     // Start is called before the first frame update
     void Start()
     {
+        StartCoroutine(AccumulateTiberium());
+
         foreach (Renderer r in GetComponentsInChildren<Renderer>())
         {
             r.material.color = Color.HSVToRGB(Random.Range(0.0f, 1.0f), 1, 1);
