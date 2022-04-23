@@ -18,6 +18,14 @@ public class Base : MonoBehaviour
             if(tiberium != 10) {
                 tiberium++;
             }
+
+            if(tiberium == 10) {
+                GameObject newPrefab = Instantiate(fighterPrefab, transform.position + new Vector3(1, 0, 1), Quaternion.identity, gameObject.transform);
+
+                newPrefab.transform.GetChild(0).gameObject.GetComponent<Renderer>().material.SetColor("_Color", gameObject.GetComponent<Renderer>().material.color);
+
+                tiberium -= 10;
+            }
         }
     }
 
@@ -36,10 +44,5 @@ public class Base : MonoBehaviour
     void Update()
     {
         text.text = "" + tiberium;        
-
-        if(tiberium == 10) {
-            GameObject newPrefab = Instantiate(fighterPrefab, transform.position + new Vector3(1, 0, 1), Quaternion.identity, gameObject.transform);
-            tiberium -= 10;
-        }
     }
 }
