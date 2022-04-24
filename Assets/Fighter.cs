@@ -5,6 +5,7 @@ using UnityEngine;
 public class Fighter : MonoBehaviour
 {
     public int tiberium = 7;
+    public TrailRenderer trail;
     public GameObject[] bases;
     public GameObject myBase;
     public GameObject targetBase;
@@ -30,11 +31,14 @@ public class Fighter : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        trail = gameObject.GetComponent<TrailRenderer>();
         arrive = GetComponent<Arrive>();
         boid = GetComponent<Boid>();
         bases = GameObject.FindGameObjectsWithTag("Base");
 
         StartCoroutine(ShootTargetBase());
+
+        trail.material.SetColor("_Color", gameObject.transform.GetChild(0).gameObject.GetComponent<Renderer>().material.color);
 
         myBase = gameObject.transform.parent.gameObject;
 
