@@ -20,8 +20,9 @@ public class Base : MonoBehaviour
             }
 
             if(tiberium == 10) {
-                GameObject newPrefab = Instantiate(fighterPrefab, transform.position + new Vector3(1, 0, 1), Quaternion.identity, gameObject.transform);
+                GameObject newPrefab = Instantiate(fighterPrefab, transform.position + new Vector3(1, 0, 1), Quaternion.identity);
 
+                newPrefab.transform.SetParent(gameObject.transform);
                 newPrefab.transform.GetChild(0).gameObject.GetComponent<Renderer>().material.SetColor("_Color", gameObject.GetComponent<Renderer>().material.color);
 
                 tiberium -= 10;
