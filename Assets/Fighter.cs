@@ -16,7 +16,7 @@ public class Fighter : MonoBehaviour
         while(true) {
             yield return new WaitForSeconds(1);
 
-            if(Vector3.Distance(targetBase.transform.position, transform.position) < 10 && tiberium > 0) {
+            if(Vector3.Distance(arrive.targetPosition, transform.position) < 2 && tiberium > 0) {
                 GameObject newBullet = Instantiate(bulletPrefab, transform.position, transform.rotation);
 
                 newBullet.transform.SetParent(gameObject.transform);
@@ -44,13 +44,17 @@ public class Fighter : MonoBehaviour
             targetBase = bases[index];
         }
 
-        arrive.targetGameObject = targetBase;
+        Vector3 toTarget = targetBase.transform.position - myBase.transform.position;
+        float distance = toTarget.magnitude;
+        Vector3 direction = toTarget / distance;
+
+        arrive.targetPosition = targetBase.transform.position - (direction * 10);
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(Vector3.Distance(targetBase.transform.position, gameObject.transform.position) < 10) {
+        if(Vector3.Distance(arrive.targetPosition, gameObject.transform.position) < 2) {
             boid.enabled = false;
         }
     }
