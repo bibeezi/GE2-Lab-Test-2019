@@ -160,6 +160,10 @@ MonoBehaviour:
   bases: []
   myBase: {fileID: 0}
   targetBase: {fileID: 0}
+  arrive: {fileID: 0}
+  boid: {fileID: 0}
+  bulletPrefab: {fileID: 7390136343811685161, guid: ae30e55a6b7c9df4e827f669f7fa6235,
+    type: 3}
 --- !u!114 &430574989337014435
 MonoBehaviour:
   m_ObjectHideFlags: 0

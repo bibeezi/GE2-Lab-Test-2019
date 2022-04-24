@@ -10,6 +10,22 @@ public class Fighter : MonoBehaviour
     public GameObject targetBase;
     public Arrive arrive;
     public Boid boid;
+    public GameObject bulletPrefab;
+
+    IEnumerator ShootTargetBase() {
+        while(true) {
+            yield return new WaitForSeconds(1);
+
+            if(Vector3.Distance(targetBase.transform.position, transform.position) < 10 && tiberium > 0) {
+                GameObject newBullet = Instantiate(bulletPrefab, transform.position, transform.rotation);
+
+                newBullet.transform.SetParent(gameObject.transform);
+                newBullet.GetComponent<Renderer>().material.SetColor("_Color", gameObject.transform.GetChild(0).gameObject.GetComponent<Renderer>().material.color);
+
+                tiberium--;
+            }
+        }
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -17,6 +33,8 @@ public class Fighter : MonoBehaviour
         arrive = GetComponent<Arrive>();
         boid = GetComponent<Boid>();
         bases = GameObject.FindGameObjectsWithTag("Base");
+
+        StartCoroutine(ShootTargetBase());
 
         myBase = gameObject.transform.parent.gameObject;
 
