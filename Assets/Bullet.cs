@@ -5,6 +5,7 @@ using UnityEngine;
 public class Bullet : MonoBehaviour
 {
     public float speed = 5.0f;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -20,5 +21,16 @@ public class Bullet : MonoBehaviour
     void Update()
     {
         transform.Translate(0, 0, speed * Time.deltaTime);
+    }
+
+    private void OnTriggerEnter(Collider other) {
+
+        if(other.gameObject.tag == "Base") {
+            Base targetBase = other.gameObject.GetComponent<Base>();
+
+            targetBase.tiberium -= 0.5f;
+            
+            KillMe();
+        }
     }
 }

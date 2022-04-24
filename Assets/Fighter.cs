@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Fighter : MonoBehaviour
 {
-    public int tiberium = 7;
+    public float tiberium = 7;
     public TrailRenderer trail;
     public GameObject[] bases;
     public GameObject myBase;
@@ -12,18 +12,42 @@ public class Fighter : MonoBehaviour
     public Arrive arrive;
     public Boid boid;
     public GameObject bulletPrefab;
+    public bool shootCoroutine = false;
 
-    IEnumerator ShootTargetBase() {
+    IEnumerator ReturnToBase() {
+        while(true) {
+
+        }
+    }
+
+    IEnumerator ShootBase() {
+        while(tiberium > 0) {
+            yield return new WaitForSeconds(0.2f);
+
+            GameObject newBullet = Instantiate(bulletPrefab, transform.position, transform.rotation);
+
+            newBullet.transform.SetParent(gameObject.transform);
+            newBullet.GetComponent<Renderer>().material.SetColor("_Color", gameObject.transform.GetChild(0).gameObject.GetComponent<Renderer>().material.color);
+
+            tiberium--;
+
+            if(tiberium == 0) {
+                shootCoroutine = false;
+
+                // StartCoroutine(ReturnToBase());
+                StopCoroutine(ShootBase());
+            }
+        }
+    }
+
+    IEnumerator CheckForBase() {
         while(true) {
             yield return new WaitForSeconds(1);
 
-            if(Vector3.Distance(arrive.targetPosition, transform.position) < 2 && tiberium > 0) {
-                GameObject newBullet = Instantiate(bulletPrefab, transform.position, transform.rotation);
+            if(Vector3.Distance(arrive.targetPosition, transform.position) < 2 && tiberium > 0 && !shootCoroutine) {
+                StartCoroutine(ShootBase());
 
-                newBullet.transform.SetParent(gameObject.transform);
-                newBullet.GetComponent<Renderer>().material.SetColor("_Color", gameObject.transform.GetChild(0).gameObject.GetComponent<Renderer>().material.color);
-
-                tiberium--;
+                shootCoroutine = true;
             }
         }
     }
@@ -36,7 +60,7 @@ public class Fighter : MonoBehaviour
         boid = GetComponent<Boid>();
         bases = GameObject.FindGameObjectsWithTag("Base");
 
-        StartCoroutine(ShootTargetBase());
+        StartCoroutine(CheckForBase());
 
         trail.material.SetColor("_Color", gameObject.transform.GetChild(0).gameObject.GetComponent<Renderer>().material.color);
 
@@ -62,4 +86,5 @@ public class Fighter : MonoBehaviour
             boid.enabled = false;
         }
     }
+
 }
