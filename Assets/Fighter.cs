@@ -5,86 +5,190 @@ using UnityEngine;
 public class Fighter : MonoBehaviour
 {
     public float tiberium = 7;
-    public TrailRenderer trail;
-    public GameObject[] bases;
+    // public TrailRenderer trail;
+    // public GameObject[] bases;
     public GameObject myBase;
-    public GameObject targetBase;
-    public Arrive arrive;
-    public Boid boid;
+    // public GameObject targetBase;
     public GameObject bulletPrefab;
-    public bool shootCoroutine = false;
+    // public Arrive arrive;
+    // public Boid boid;
+    // public Base baseScript;
 
-    IEnumerator ReturnToBase() {
-        while(true) {
+    // void ReturnToBase() {
+    //     arrive.targetPosition = myBase.transform.position;
 
-        }
-    }
+    //     boid.enabled = true;
+    // }
 
-    IEnumerator ShootBase() {
-        while(tiberium > 0) {
-            yield return new WaitForSeconds(0.2f);
+    // public class AttackTargetBase : State {
+    //     public override void Enter()
+    //     {
+    //         base.Enter();
+    //     }
 
-            GameObject newBullet = Instantiate(bulletPrefab, transform.position, transform.rotation);
+    //     public override void Think()
+    //     {
+    //         base.Think();
+    //     }
 
-            newBullet.transform.SetParent(gameObject.transform);
-            newBullet.GetComponent<Renderer>().material.SetColor("_Color", gameObject.transform.GetChild(0).gameObject.GetComponent<Renderer>().material.color);
+    //     public override void Exit()
+    //     {
+    //         base.Exit();
+    //     }
+    // }
 
-            tiberium--;
+    // void AttackTargetBase() {
+    //     while(ReferenceEquals(myBase, targetBase) || targetBase == null) {
+    //         int index = Random.Range(0, bases.Length);
 
-            if(tiberium == 0) {
-                shootCoroutine = false;
+    //         targetBase = bases[index];
+    //     }
 
-                // StartCoroutine(ReturnToBase());
-                StopCoroutine(ShootBase());
+    //     Vector3 toTarget = targetBase.transform.position - myBase.transform.position;
+    //     float distance = toTarget.magnitude;
+    //     Vector3 direction = toTarget / distance;
+
+    //     arrive.targetPosition = targetBase.transform.position - (direction * 10);
+    // }
+
+    // IEnumerator ShootBase() {
+    //     while(tiberium > 0) {
+    //         yield return new WaitForSeconds(0.2f);
+
+    //         GameObject newBullet = Instantiate(bulletPrefab, transform.position, transform.rotation);
+
+    //         newBullet.GetComponent<Renderer>().material.SetColor("_Color", gameObject.transform.GetChild(0).gameObject.GetComponent<Renderer>().material.color);
+
+    //         if(tiberium == 0) {
+    //             ReturnToBase();
+
+    //             yield break;
+    //         }
+    //         else {
+    //             tiberium--;
+    //         }
+    //     }
+    // }
+
+    // IEnumerator CheckForBase() {
+    //     while(true) {
+    //         yield return new WaitForSeconds(1);
+
+    //         if(Vector3.Distance(arrive.targetPosition, transform.position) < 2 && tiberium > 0) {
+
+    //             StartCoroutine(ShootBase());
+    //         }
+    //     }
+    // }
+
+    public class RefuelAtBase : State {
+        public override void Think()
+        {
+            if(owner.GetComponent<Fighter>().myBase.GetComponent<Base>().tiberium >= 7) {
+                owner.GetComponent<Fighter>().myBase.GetComponent<Base>().tiberium -= 7;
+                owner.GetComponent<Fighter>().tiberium += 7;
+                owner.GetComponent<StateMachine>().ChangeState(new CheckForTargetBase());
             }
         }
     }
 
-    IEnumerator CheckForBase() {
-        while(true) {
-            yield return new WaitForSeconds(1);
+    public class ReturnToBase : State {
+        public override void Enter()
+        {
+            owner.GetComponent<Arrive>().targetPosition = owner.GetComponent<Fighter>().myBase.transform.position;
+            owner.GetComponent<Arrive>().enabled = true;
+        }
 
-            if(Vector3.Distance(arrive.targetPosition, transform.position) < 2 && tiberium > 0 && !shootCoroutine) {
-                StartCoroutine(ShootBase());
-
-                shootCoroutine = true;
+        public override void Think()
+        {
+            if(Vector3.Distance(owner.GetComponent<Arrive>().targetPosition, owner.GetComponent<Fighter>().transform.position) < 2) {
+                owner.GetComponent<StateMachine>().ChangeState(new RefuelAtBase());
             }
+        }
+
+        public override void Exit()
+        {
+            owner.GetComponent<Arrive>().enabled = false;
+        }
+    }
+
+    public class ShootTargetBase : State {
+        public override void Think()
+        {
+            if(owner.GetComponent<Fighter>().tiberium > 0) {
+                GameObject newBullet = Instantiate(owner.GetComponent<Fighter>().bulletPrefab, owner.GetComponent<Fighter>().transform.position, owner.GetComponent<Fighter>().transform.rotation);
+
+                newBullet.GetComponent<Renderer>().material.SetColor("_Color", owner.GetComponent<Fighter>().gameObject.transform.GetChild(0).gameObject.GetComponent<Renderer>().material.color);
+
+                owner.GetComponent<Fighter>().tiberium--;
+            }
+            else {
+                owner.GetComponent<StateMachine>().ChangeState(new ReturnToBase());
+            }
+        }
+    }
+
+    public class CheckForTargetBase : State {
+
+        public override void Enter()
+        {
+            owner.GetComponent<Arrive>().enabled = true;
+
+            GameObject myBase = owner.GetComponent<Fighter>().myBase;
+            GameObject[] bases = GameObject.FindGameObjectsWithTag("Base");
+            GameObject targetBase = myBase;
+
+            while(ReferenceEquals(myBase, targetBase) || targetBase == null) {
+                int index = Random.Range(0, bases.Length);
+
+                targetBase = bases[index];
+            }
+
+            Vector3 toTarget = targetBase.transform.position - owner.GetComponent<Fighter>().transform.position;
+            float distance = toTarget.magnitude;
+            Vector3 direction = toTarget / distance;
+
+            owner.GetComponent<Arrive>().targetPosition = targetBase.transform.position - (direction * 10);
+        }
+        public override void Think()
+        {
+            if(Vector3.Distance(owner.GetComponent<Arrive>().targetPosition, owner.GetComponent<Fighter>().transform.position) < 2 && 
+                owner.GetComponent<Fighter>().tiberium > 0) 
+            {
+                owner.GetComponent<StateMachine>().ChangeState(new ShootTargetBase());
+            }
+        }
+
+        public override void Exit()
+        {
+            owner.GetComponent<Arrive>().enabled = false;
         }
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        trail = gameObject.GetComponent<TrailRenderer>();
-        arrive = GetComponent<Arrive>();
-        boid = GetComponent<Boid>();
-        bases = GameObject.FindGameObjectsWithTag("Base");
+        // arrive = GetComponent<Arrive>();
+        // boid = GetComponent<Boid>();
+        // baseScript = gameObject.transform.parent.gameObject.GetComponent<Base>();
 
-        StartCoroutine(CheckForBase());
+        // bases = GameObject.FindGameObjectsWithTag("Base");
 
-        trail.material.SetColor("_Color", gameObject.transform.GetChild(0).gameObject.GetComponent<Renderer>().material.color);
+        // StartCoroutine(CheckForBase());
 
-        myBase = gameObject.transform.parent.gameObject;
+        // myBase = gameObject.transform.parent.gameObject;
 
-        while(ReferenceEquals(myBase, targetBase) || targetBase == null) {
-            int index = Random.Range(0, bases.Length);
+        // AttackTargetBase();
 
-            targetBase = bases[index];
-        }
-
-        Vector3 toTarget = targetBase.transform.position - myBase.transform.position;
-        float distance = toTarget.magnitude;
-        Vector3 direction = toTarget / distance;
-
-        arrive.targetPosition = targetBase.transform.position - (direction * 10);
+        GetComponent<StateMachine>().ChangeState(new CheckForTargetBase());
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(Vector3.Distance(arrive.targetPosition, gameObject.transform.position) < 2) {
-            boid.enabled = false;
-        }
+        // if(Vector3.Distance(arrive.targetPosition, gameObject.transform.position) < 2) {
+            // boid.enabled = false;
+        // }
     }
 
 }

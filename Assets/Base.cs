@@ -20,20 +20,26 @@ public class Base : MonoBehaviour
             }
 
             if(tiberium == 10) {
-                GameObject newPrefab = Instantiate(fighterPrefab, transform.position + new Vector3(1, 0, 1), Quaternion.identity);
+                GameObject newPrefab = Instantiate(fighterPrefab, transform.position, Quaternion.identity);
 
                 newPrefab.transform.SetParent(gameObject.transform);
                 newPrefab.transform.GetChild(0).gameObject.GetComponent<Renderer>().material.SetColor("_Color", gameObject.GetComponent<Renderer>().material.color);
+                newPrefab.GetComponent<TrailRenderer>().material.SetColor("_Color", gameObject.GetComponent<Renderer>().material.color);
+                newPrefab.GetComponent<Fighter>().myBase = this.gameObject;
 
                 tiberium -= 10;
             }
         }
     }
 
+    void OnEnable() {
+        StartCoroutine(AccumulateTiberium());
+    }
+
     // Start is called before the first frame update
     void Start()
     {
-        StartCoroutine(AccumulateTiberium());
+        // StartCoroutine(AccumulateTiberium());
 
         foreach (Renderer r in GetComponentsInChildren<Renderer>())
         {
